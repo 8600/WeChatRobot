@@ -9,9 +9,6 @@ const _ = require('lodash');
 // 保住console引用 便于使用
 window._console = window.console;
 
-function message(str){
-	console.log(ipcRenderer.sendSync('message', str));
-}
 function debug(/*args*/){
 	var args = JSON.stringify(_.toArray(arguments));
 	_console.log(args);
@@ -28,7 +25,7 @@ let free = true;
 // 适当清理历史 缓解dom数量
 function reset(){
 	const msgs = $('#chatArea').scope().chatContent;
-	console.log(msgs);
+	_console.log(msgs);
 	if (msgs.length >= 30) msgs.splice(0, 20);
 	$('img[src*=filehelper]').closest('.chat_item')[0].click();
 	free = true;
@@ -37,49 +34,40 @@ function reset(){
 function onReddot($chat_item){
 	if (!free) return;
 	free = false;
+	//将焦点移动到发来消息人的对话框
 	$chat_item[0].click();
-	message($chat_item[0]);
-	setTimeout(function(){
-	var reply = {};
+	let from,room,reply = {};
 
 	// 自动回复 相同的内容
-	var $msg = $([
-		'.message:not(.me) .bubble_cont > div',
-		'.message:not(.me) .bubble_cont > a.app',
-		'.message:not(.me) .emoticon',
-		'.message_system'
-	].join(', ')).last();
-	var $message = $msg.closest('.message');
-	var $nickname = $message.find('.nickname');
-	var $titlename = $('.title_name');
-
+	const $msg = $(['.message:not(.me) .bubble_cont > div','.message:not(.me) .bubble_cont > a.app','.message:not(.me) .emoticon','.message_system'].join(', ')).last();
+	const $message = $msg.closest('.message');
+	const $nickname = $message.find('.nickname');
+	const $titlename = $('.title_name');
 	if ($nickname.length) { // 群聊
-		var from = $nickname.text();
-		var room = $titlename.text();
+		from = $nickname.text();
+		room = $titlename.text();
 	} else { // 单聊
-		var from = $titlename.text();
-		var room = null;
+		from = $titlename.text();
+		room = null;
 	}
 	debug('来自', from, room);// 这里的nickname会被remark覆盖
-
+	_console.log($msg);
 	// 系统消息暂时无法捕获
 	// 因为不产生红点 而目前我们依靠红点 可以改善
 	if ($msg.is('.message_system')) {
-		
-		var ctn = $msg.find('.content').text();
-		message(ctn);
-		if (ctn === '收到红包，请在手机上查看') {
-			text = '发毛红包';
-		} else if (ctn === '位置共享已经结束') {
-			text = '位置共享已经结束';
-		} else if (ctn === '实时对讲已经结束') {
-			text = '实时对讲已经结束';
-		} else if (ctn.match(/(.+)邀请(.+)加入了群聊/)) {
-			text = '加毛人';
-		} else if (ctn.match(/(.+)撤回了一条消息/)) {
-			text = '撤你妹';
-		} else {
-			// 无视
+		_console.log("系统消息！");
+		const ctn = $msg.find('.content').text();
+		switch (ctn){
+			case '收到红包，请在手机上查看':reply.text = '发毛红包';break;
+			case '位置共享已经结束':reply.text = '位置共享已经结束';break;
+			case '实时对讲已经结束':reply.text = '实时对讲已经结束';break;
+			default:{
+				if (ctn.match(/(.+)邀请(.+)加入了群聊/)) {
+					reply.text = '加毛人';
+				} else if (ctn.match(/(.+)撤回了一条消息/)) {
+					reply.text = '撤你妹';
+				} 
+			}
 		}
 	} else
 
@@ -144,6 +132,7 @@ function onReddot($chat_item){
 		debug('接收', 'link', title, desc, url);
 		reply.text = title + '\n' + url;
 	} else if ($msg.is('.plain')) {
+		_console.log("文字消息！");
 		var text = '';
 		var normal = false;
 		var $text = $msg.find('.js_message_plain');
@@ -216,14 +205,23 @@ function onReddot($chat_item){
 		reset();
 	}
 
-
-
-	}, 100);
 }
 
 //登录成功执行函数
 function onLogin(){
 	$('img[src*=filehelper]').closest('.chat_item')[0].click();
+	setInterval(function(){
+		const $reddot = $('.web_wechat_reddot, .web_wechat_reddot_middle').last();
+		if ($reddot.length!==0) {
+			const $chat_item = $reddot.closest('.chat_item');
+			try {
+				_console.log("----------------");
+				onReddot($chat_item);
+			} catch (err) { // 错误解锁
+				reset();
+			}
+		}
+	}, 200);
 }
 
 function init(){

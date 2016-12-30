@@ -33,7 +33,7 @@ app.on('ready', function(){
 		}
 	});
 	//程序关闭事件
-	win.on('close', () => {
+	win.on('minimize', () => {
         app.quit();
     });
 	win.loadURL('https://wx.qq.com/?lang=zh_CN&t=' + Date.now());
@@ -56,12 +56,6 @@ app.on('ready', function(){
 				debug('下载失败', filename);
 			}
 		});
-	});
-
-
-	ipcMain.on('message', function(event, arg) {
-  		console.log(arg); 
-		event.sender.send('reply', 'ok!');
 	});
 });
 
