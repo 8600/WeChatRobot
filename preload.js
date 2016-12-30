@@ -31,15 +31,12 @@ function reset(){
 	free = true;
 }
 
-function onReddot($chat_item){
-	if (!free) return;
-	free = false;
-	//将焦点移动到发来消息人的对话框
-	$chat_item[0].click();
+const getMessage=function (){
+	_console.log("2");
 	let from,room,reply = {};
 
-	// 自动回复 相同的内容
-	const $msg = $(['.message:not(.me) .bubble_cont > div','.message:not(.me) .bubble_cont > a.app','.message:not(.me) .emoticon','.message_system'].join(', ')).last();
+	// 获取消息块元素
+	const $msg = $('.message.ng-scope .bubble_cont > div').last();
 	const $message = $msg.closest('.message');
 	const $nickname = $message.find('.nickname');
 	const $titlename = $('.title_name');
@@ -204,7 +201,15 @@ function onReddot($chat_item){
 		$('.btn_send')[0].click();
 		reset();
 	}
+};
 
+function onReddot($chat_item){
+	if (!free) return;
+	free = false;
+	//将焦点移动到发来消息人的对话框
+	$chat_item[0].click();
+	_console.log("1");
+	setinterval(getMessage,300);
 }
 
 //登录成功执行函数
@@ -213,6 +218,7 @@ function onLogin(){
 	setInterval(function(){
 		const $reddot = $('.web_wechat_reddot, .web_wechat_reddot_middle').last();
 		if ($reddot.length!==0) {
+			//遍历聊天列表
 			const $chat_item = $reddot.closest('.chat_item');
 			try {
 				_console.log("----------------");
