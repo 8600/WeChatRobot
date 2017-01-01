@@ -31,12 +31,74 @@ function reset(){
 	free = true;
 }
 
-const getMessage=function (){
-	_console.log("2");
-	let from,room,reply = {};
+function textMessage($msg){
+		_console.log("文字消息！");
+		var text = '';
+		var normal = false;
+		var $text = $msg.find('.js_message_plain');
+		$text.contents().each(function(i, node){
+			if (node.nodeType === Node.TEXT_NODE) {
+				text += node.nodeValue;
+			} else if (node.nodeType === Node.ELEMENT_NODE) {
+				var $el = $(node);
+				if ($el.is('br')) text += '\n';
+				else if ($el.is('.qqemoji, .emoji')) {
+					text += $el.attr('text').replace(/_web$/, '');
+				}
+			}
+		});
+		if (text === '[收到了一个表情，请在手机上查看]' ||
+				text === '[Received a sticker. View on phone]') { // 微信表情包
+			text = '发毛表情';
+		} else if (text === '[收到一条微信转账消息，请在手机上查看]' ||
+				text === '[Received transfer. View on phone.]') {
+			text = '转毛帐';
+		} else if (text === '[收到一条视频/语音聊天消息，请在手机上查看]' ||
+				text === '[Received video/voice chat message. View on phone.]') {
+			text = '聊jj';
+		} else if (text === '我发起了实时对讲') {
+			text = '对讲你妹';
+		} else if (text === '该类型暂不支持，请在手机上查看') {
+			text = '';
+		} else if (text.match(/(.+)发起了位置共享，请在手机上查看/) ||
+				text.match(/(.+)started a real\-time location session\. View on phone/)) {
+			text = '发毛位置共享';
+		} else {
+			normal = true;
+		}
+		debug('接收', 'text', text);
+		// if (normal && !text.match(/叼|屌|diao|丢你|碉堡/i)) text = ''
+		reply.text = text;
+}
 
-	// 获取消息块元素
-	const $msg = $('.message.ng-scope .bubble_cont > div').last();
+//系统消息处理函数
+function systemMessage($msg){
+	_console.log("系统消息！");
+		const ctn = $msg.find('.content').text();
+		switch (ctn){
+			case '收到红包，请在手机上查看':reply.text = '发毛红包';break;
+			case '位置共享已经结束':reply.text = '位置共享已经结束';break;
+			case '实时对讲已经结束':reply.text = '实时对讲已经结束';break;
+			default:{
+				if (ctn.match(/(.+)邀请(.+)加入了群聊/)) {
+					reply.text = '加毛人';
+				} else if (ctn.match(/(.+)撤回了一条消息/)) {
+					reply.text = '撤你妹';
+				} 
+			}
+		}
+}
+
+let reply = {};
+//回复消息函数
+function replyMessage(){
+	let from,room;
+	// 自动回复 相同的内容
+	let $msg = $('.chat_bd.scrollbar-dynamic.scroll-content');
+	_console.log($msg);
+	$msg = $('.message.ng-scope').last();
+	_console.log($msg);
+	$msg = $msg.find('div');
 	const $message = $msg.closest('.message');
 	const $nickname = $message.find('.nickname');
 	const $titlename = $('.title_name');
@@ -52,23 +114,8 @@ const getMessage=function (){
 	// 系统消息暂时无法捕获
 	// 因为不产生红点 而目前我们依靠红点 可以改善
 	if ($msg.is('.message_system')) {
-		_console.log("系统消息！");
-		const ctn = $msg.find('.content').text();
-		switch (ctn){
-			case '收到红包，请在手机上查看':reply.text = '发毛红包';break;
-			case '位置共享已经结束':reply.text = '位置共享已经结束';break;
-			case '实时对讲已经结束':reply.text = '实时对讲已经结束';break;
-			default:{
-				if (ctn.match(/(.+)邀请(.+)加入了群聊/)) {
-					reply.text = '加毛人';
-				} else if (ctn.match(/(.+)撤回了一条消息/)) {
-					reply.text = '撤你妹';
-				} 
-			}
-		}
-	} else
-
-	if ($msg.is('.emoticon')) { // 自定义表情
+		systemMessage($msg);
+	} else if ($msg.is('.emoticon')) { // 自定义表情
 		var src = $msg.find('.msg-img').prop('src');
 		debug('接收', 'emoticon', src);
 		reply.text = '发毛表情';
@@ -129,43 +176,7 @@ const getMessage=function (){
 		debug('接收', 'link', title, desc, url);
 		reply.text = title + '\n' + url;
 	} else if ($msg.is('.plain')) {
-		_console.log("文字消息！");
-		var text = '';
-		var normal = false;
-		var $text = $msg.find('.js_message_plain');
-		$text.contents().each(function(i, node){
-			if (node.nodeType === Node.TEXT_NODE) {
-				text += node.nodeValue;
-			} else if (node.nodeType === Node.ELEMENT_NODE) {
-				var $el = $(node);
-				if ($el.is('br')) text += '\n';
-				else if ($el.is('.qqemoji, .emoji')) {
-					text += $el.attr('text').replace(/_web$/, '');
-				}
-			}
-		});
-		if (text === '[收到了一个表情，请在手机上查看]' ||
-				text === '[Received a sticker. View on phone]') { // 微信表情包
-			text = '发毛表情';
-		} else if (text === '[收到一条微信转账消息，请在手机上查看]' ||
-				text === '[Received transfer. View on phone.]') {
-			text = '转毛帐';
-		} else if (text === '[收到一条视频/语音聊天消息，请在手机上查看]' ||
-				text === '[Received video/voice chat message. View on phone.]') {
-			text = '聊jj';
-		} else if (text === '我发起了实时对讲') {
-			text = '对讲你妹';
-		} else if (text === '该类型暂不支持，请在手机上查看') {
-			text = '';
-		} else if (text.match(/(.+)发起了位置共享，请在手机上查看/) ||
-				text.match(/(.+)started a real\-time location session\. View on phone/)) {
-			text = '发毛位置共享';
-		} else {
-			normal = true;
-		}
-		debug('接收', 'text', text);
-		// if (normal && !text.match(/叼|屌|diao|丢你|碉堡/i)) text = ''
-		reply.text = text;
+		textMessage($msg);
 	}
 	debug('回复', reply);
 
@@ -201,15 +212,16 @@ const getMessage=function (){
 		$('.btn_send')[0].click();
 		reset();
 	}
-};
+}
 
 function onReddot($chat_item){
 	if (!free) return;
 	free = false;
 	//将焦点移动到发来消息人的对话框
 	$chat_item[0].click();
-	_console.log("1");
-	setinterval(getMessage,300);
+	setTimeout(replyMessage(), 200);
+	
+
 }
 
 //登录成功执行函数
@@ -218,14 +230,13 @@ function onLogin(){
 	setInterval(function(){
 		const $reddot = $('.web_wechat_reddot, .web_wechat_reddot_middle').last();
 		if ($reddot.length!==0) {
-			//遍历聊天列表
 			const $chat_item = $reddot.closest('.chat_item');
-			try {
+			//try {
 				_console.log("----------------");
 				onReddot($chat_item);
-			} catch (err) { // 错误解锁
-				reset();
-			}
+			//} catch (err) { // 错误解锁
+				//reset();
+			//}
 		}
 	}, 200);
 }
