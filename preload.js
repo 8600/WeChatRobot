@@ -90,8 +90,9 @@ function systemMessage($msg){
 }
 
 let reply = {};
+
 //回复消息函数
-function replyMessage(){
+function replyMessage2(){
 	let from,room;
 	// 自动回复 相同的内容
 	let $msg = $('.chat_bd.scrollbar-dynamic.scroll-content');
@@ -214,48 +215,63 @@ function replyMessage(){
 	}
 }
 
+function replyMessage(){
+	//获取消息体dom
+	let $msg = $('.chat_bd.scrollbar-dynamic.scroll-content');$msg = $('.message.ng-scope').last();$msg = $msg.find('div');
+	const $message = $msg.closest('.message');
+	const $nickname = $message.find('.nickname');
+	if ($nickname.length) { // 群聊
+		const $titlename = $('.title_name');
+		_console.log(`消息来自---${$titlename.text()}---${nickname.text()}`);
+	} else { // 单聊
+		_console.log(`消息来自---${$titlename.text()}`);
+	}
+	reset();
+	setTimeout(onLogin,100);
+	_console.log($msg);
+}
+
 function onReddot($chat_item){
 	if (!free) return;
 	free = false;
 	//将焦点移动到发来消息人的对话框
 	$chat_item[0].click();
-	setTimeout(replyMessage(), 200);
-	
-
+	_console.log(`接收到未读消息，打开聊天窗口！`);
+	setTimeout(replyMessage, 1200);
 }
 
 //登录成功执行函数
 function onLogin(){
-	$('img[src*=filehelper]').closest('.chat_item')[0].click();
-	setInterval(function(){
-		const $reddot = $('.web_wechat_reddot, .web_wechat_reddot_middle').last();
-		if ($reddot.length!==0) {
-			const $chat_item = $reddot.closest('.chat_item');
+	//清除微信阻止关闭事件
+	window.onbeforeunload="";
+	//$('img[src*=filehelper]').closest('.chat_item')[0].click();
+	const $reddot = $('.web_wechat_reddot_middle').last();
+	if ($reddot.length!==0) {
+		const $chat_item = $reddot.closest('.chat_item');
 			//try {
-				_console.log("----------------");
 				onReddot($chat_item);
 			//} catch (err) { // 错误解锁
 				//reset();
 			//}
-		}
-	}, 200);
+	}
+	else{
+		_console.log(`没有接收到未读消息！`);
+		setTimeout(onLogin,1000);
+	}
 }
 
-function init(){
-	const checkForQrcode = setInterval(function(){
-		const qrimg = document.querySelector('.qrcode img');
-		if (qrimg && qrimg.src.match(/\/qrcode/)) {
-			clearInterval(checkForQrcode);
-		}
-	}, 500);
-	const checkForLogin = setInterval(function(){
-		const chat_item = document.querySelector('.chat_item');
-		if (chat_item) {
-			onLogin();
-			clearInterval(checkForLogin);
-		}
-	}, 500);
+function chak(){
+	const chat_item = document.querySelector('.chat_item');
+	if (chat_item!==null) {
+		_console.log(`二维码登录成功，正在获取消息`);
+		setTimeout(onLogin,200);
+	}
+	else{
+		_console.log(`还没有扫描二维码！`);
+		setTimeout(chak, 2500);
+	}
 }
+
 
 
 
@@ -282,4 +298,5 @@ function paste(opt){
 	clipboard.writeText(oldText);
 }
 
-init();
+_console.log(`开始检查验证码状态`);
+setTimeout(chak, 2500);
