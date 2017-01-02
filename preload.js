@@ -31,43 +31,7 @@ function reset(){
 }
 
 function textMessage($msg){
-		_console.log("文字消息！");
-		var text = '';
-		var normal = false;
-		var $text = $msg.find('.js_message_plain');
-		$text.contents().each(function(i, node){
-			if (node.nodeType === Node.TEXT_NODE) {
-				text += node.nodeValue;
-			} else if (node.nodeType === Node.ELEMENT_NODE) {
-				var $el = $(node);
-				if ($el.is('br')) text += '\n';
-				else if ($el.is('.qqemoji, .emoji')) {
-					text += $el.attr('text').replace(/_web$/, '');
-				}
-			}
-		});
-		if (text === '[收到了一个表情，请在手机上查看]' ||
-				text === '[Received a sticker. View on phone]') { // 微信表情包
-			text = '发毛表情';
-		} else if (text === '[收到一条微信转账消息，请在手机上查看]' ||
-				text === '[Received transfer. View on phone.]') {
-			text = '转毛帐';
-		} else if (text === '[收到一条视频/语音聊天消息，请在手机上查看]' ||
-				text === '[Received video/voice chat message. View on phone.]') {
-			text = '聊jj';
-		} else if (text === '我发起了实时对讲') {
-			text = '对讲你妹';
-		} else if (text === '该类型暂不支持，请在手机上查看') {
-			text = '';
-		} else if (text.match(/(.+)发起了位置共享，请在手机上查看/) ||
-				text.match(/(.+)started a real\-time location session\. View on phone/)) {
-			text = '发毛位置共享';
-		} else {
-			normal = true;
-		}
-		debug('接收', 'text', text);
-		// if (normal && !text.match(/叼|屌|diao|丢你|碉堡/i)) text = ''
-		reply.text = text;
+		
 }
 
 //系统消息处理函数
@@ -214,6 +178,37 @@ function replyMessage2(){
 	}
 }
 
+function plain(msg){
+	_console.log("文字消息！");
+		let text = '';
+		_console.log(msg);
+		var $text = msg.find('.js_message_plain');
+		_console.log();
+		$text.contents().each(function(i, node){
+			if (node.nodeType === Node.TEXT_NODE) {
+				text += node.nodeValue;
+			} else if (node.nodeType === Node.ELEMENT_NODE) {
+				var $el = $(node);
+				if ($el.is('br')) text += '\n';
+				else if ($el.is('.qqemoji, .emoji')) {
+					text += $el.attr('text').replace(/_web$/, '');
+				}
+			}
+		});
+		switch(text){
+			case `[收到了一个表情，请在手机上查看]`:text="收到一个表情";break;
+			case `[收到一条微信转账消息，请在手机上查看]`:text="收到一条转账";break;
+			case `[收到一条视频/语音聊天消息，请在手机上查看]`:text="收到一个语音";break;
+			case `我发起了实时对讲`:text="收到一条对讲";break;
+			case `该类型暂不支持，请在手机上查看`:text="未知消息";break;
+			case `[Received a sticker. View on phone]`:text="未知消息";break;
+			case `[Received transfer. View on phone.]`:text="未知消息";break;
+			case `[Received video/voice chat message. View on phone.]`:text="未知消息";break;
+			case `该类型暂不支持，请在手机上查看`:text="未知消息";break;
+		}
+		reply.text = text;
+}
+
 function replyMessage(){
 	//获取消息体dom
 	let msg = $('.chat_bd.scrollbar-dynamic.scroll-content');msg = $('.message.ng-scope').last();msg = msg.find('div');
@@ -222,10 +217,40 @@ function replyMessage(){
 	const nickname = $('.title_name.ng-binding').text();
 	//获取消息窗口标题
 	const titlename = message.find(`.nickname.ng-binding.ng-scope`).text();
-	_console.log(`消息来自---${titlename}---${nickname}`);
+	if(titlename===""){
+		_console.log(`收到好友消息---${nickname}`);
+	}
+	else{
+		_console.log(`收到群消息---${titlename}---${nickname}`);
+	}
+	//得到消息类型
+	const messageType=msg[3].className;
+	_console.log(messageType);
+	switch(messageType){
+		case `plain`:plain(msg);break;
+		case `hjgjg`:break;
+	}
+	paste(reply);
+
+	if (reply.image) {
+		setTimeout(function(){
+			var tryClickBtn = setInterval(function(){
+				var $btn = $('.dialog_ft .btn_primary');
+				if ($btn.length) {
+					$('.dialog_ft .btn_primary')[0].click();
+				} else {
+					clearInterval(tryClickBtn);
+					reset();
+				}
+			}, 200);
+		}, 100);
+	} else {
+		$('.btn_send')[0].click();
+		reset();
+	}
+
 	reset();
 	setTimeout(onLogin,100);
-	_console.log(msg);
 }
 
 function onReddot($chat_item){
