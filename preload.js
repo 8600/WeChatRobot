@@ -24,8 +24,7 @@ let free = true;
 
 // 适当清理历史 缓解dom数量
 function reset(){
-	const msgs = $('#chatArea').scope().chatContent;
-	_console.log(msgs);
+	const msgs = $('#chatArea').scope().chatContent;	
 	if (msgs.length >= 30) msgs.splice(0, 20);
 	$('img[src*=filehelper]').closest('.chat_item')[0].click();
 	free = true;
@@ -217,18 +216,16 @@ function replyMessage2(){
 
 function replyMessage(){
 	//获取消息体dom
-	let $msg = $('.chat_bd.scrollbar-dynamic.scroll-content');$msg = $('.message.ng-scope').last();$msg = $msg.find('div');
-	const $message = $msg.closest('.message');
-	const $nickname = $message.find('.nickname');
-	if ($nickname.length) { // 群聊
-		const $titlename = $('.title_name');
-		_console.log(`消息来自---${$titlename.text()}---${nickname.text()}`);
-	} else { // 单聊
-		_console.log(`消息来自---${$titlename.text()}`);
-	}
+	let msg = $('.chat_bd.scrollbar-dynamic.scroll-content');msg = $('.message.ng-scope').last();msg = msg.find('div');
+	const message = msg.closest('.message');
+	//获取发送人名
+	const nickname = $('.title_name.ng-binding').text();
+	//获取消息窗口标题
+	const titlename = message.find(`.nickname.ng-binding.ng-scope`).text();
+	_console.log(`消息来自---${titlename}---${nickname}`);
 	reset();
 	setTimeout(onLogin,100);
-	_console.log($msg);
+	_console.log(msg);
 }
 
 function onReddot($chat_item){
@@ -242,8 +239,7 @@ function onReddot($chat_item){
 
 //登录成功执行函数
 function onLogin(){
-	//清除微信阻止关闭事件
-	window.onbeforeunload="";
+	
 	//$('img[src*=filehelper]').closest('.chat_item')[0].click();
 	const $reddot = $('.web_wechat_reddot_middle').last();
 	if ($reddot.length!==0) {
@@ -264,6 +260,8 @@ function chak(){
 	const chat_item = document.querySelector('.chat_item');
 	if (chat_item!==null) {
 		_console.log(`二维码登录成功，正在获取消息`);
+		//清除微信阻止关闭事件
+		window.onbeforeunload="";
 		setTimeout(onLogin,200);
 	}
 	else{
