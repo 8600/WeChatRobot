@@ -209,6 +209,11 @@ function plain(msg){
 		reply.text = text;
 }
 
+function picture(msg){
+	var src = msg.find('.msg-img').prop('src');
+	reply.image = './huaji.png';
+}
+
 function replyMessage(){
 	//获取消息体dom
 	let msg = $('.chat_bd.scrollbar-dynamic.scroll-content');msg = $('.message.ng-scope').last();msg = msg.find('div');
@@ -224,11 +229,12 @@ function replyMessage(){
 		_console.log(`收到群消息---${titlename}---${nickname}`);
 	}
 	//得到消息类型
+	//_console.log(msg);
 	const messageType=msg[3].className;
 	_console.log(messageType);
 	switch(messageType){
 		case `plain`:plain(msg);break;
-		case `hjgjg`:break;
+		case `picture`:picture(msg);break;
 	}
 	paste(reply);
 
@@ -259,7 +265,7 @@ function onReddot($chat_item){
 	//将焦点移动到发来消息人的对话框
 	$chat_item[0].click();
 	_console.log(`接收到未读消息，打开聊天窗口！`);
-	setTimeout(replyMessage, 1200);
+	setTimeout(replyMessage, 200);
 }
 
 //登录成功执行函数
