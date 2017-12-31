@@ -58,6 +58,3 @@ app.on('ready', function(){
 		});
 	});
 });
-
-
-

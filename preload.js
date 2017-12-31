@@ -178,6 +178,7 @@ function replyMessage2(){
 	}
 }
 
+// 文字消息处理函数
 function plain(msg){
 	_console.log("文字消息！");
 		let text = '';
@@ -216,7 +217,9 @@ function picture(msg){
 
 function replyMessage(){
 	//获取消息体dom
-	let msg = $('.chat_bd.scrollbar-dynamic.scroll-content');msg = $('.message.ng-scope').last();msg = msg.find('div');
+	let msg = $('.chat_bd.scrollbar-dynamic.scroll-content');
+	msg = $('.message.ng-scope').last();
+	msg = msg.find('div');
 	const message = msg.closest('.message');
 	//获取发送人名
 	const nickname = $('.title_name.ng-binding').text();
@@ -259,27 +262,25 @@ function replyMessage(){
 	setTimeout(onLogin,100);
 }
 
-function onReddot($chat_item){
-	if (!free) return;
-	free = false;
+// 收到新消息处理函数
+function onReddot($chat_item) {
+	// 判断是否在执行内存清理
+	if (!free) return
+	free = false
 	//将焦点移动到发来消息人的对话框
 	$chat_item[0].click();
 	_console.log(`接收到未读消息，打开聊天窗口！`);
 	setTimeout(replyMessage, 200);
 }
 
-//登录成功执行函数
+// 登陆成功开始定时监测
 function onLogin(){
-	
-	//$('img[src*=filehelper]').closest('.chat_item')[0].click();
 	const $reddot = $('.web_wechat_reddot_middle').last();
-	if ($reddot.length!==0) {
-		const $chat_item = $reddot.closest('.chat_item');
-			//try {
-				onReddot($chat_item);
-			//} catch (err) { // 错误解锁
-				//reset();
-			//}
+	if ($reddot.length !== 0) {
+		console.log('检测到未读消息!')
+		const $chat_item = $reddot.closest('.chat_item')
+		// 交给处理函数
+		onReddot($chat_item);
 	}
 	else{
 		_console.log(`没有接收到未读消息！`);

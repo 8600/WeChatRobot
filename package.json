@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "bytes": "^2.1.0",
+    "electron": "^1.7.10",
     "fs-extra": "^0.24.0",
     "lodash": "^3.10.1"
   }
