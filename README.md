@@ -14,7 +14,7 @@
 如果electron=v0.x 可以查看分支[wxbot#electron-v0](https://github.com/fritx/wxbot/tree/electron-v0)
 
 ```plain
-$ cd wxbot
+$ cd WeChatRobot
 $ npm install
 $ electron . --enable-logging  # 运行 需扫二维码登录
 ```
